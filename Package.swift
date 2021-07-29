@@ -15,12 +15,16 @@ let package = Package(
         .library(name: "DiceKit", targets: ["DiceKit"]),
         .library(name: "YachtKit", targets: ["YachtKit"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-algorithms", .upToNextMinor(from: "0.2.1")),
+    ],
     targets: [
         // Targets
         .target(
             name: "DiceKit",
-            dependencies: []
+            dependencies: [
+                .product(name: "Algorithms", package: "swift-algorithms")
+            ]
         ),
         .target(
             name: "YachtKit",

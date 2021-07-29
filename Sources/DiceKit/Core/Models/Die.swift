@@ -17,13 +17,13 @@ public final class Die: ObservableObject, Identifiable {
     // MARK: - Properties
 
     /// The value of the latest roll of this die.
-    @Published  public private(set) var latestValue: Int
+    @Published public private(set) var latestValue: Int
 
     /// The number of sides on the die.
-    @Bounded(Die.minimumNumberOfSides...)  public private(set) var sides: Int
+    @Bounded(Die.minimumNumberOfSides...) public private(set) var sides: Int
 
     /// Whether or not the die can be rolled.
-    @Published  public private(set) var isFrozen: Bool = false
+    @Published public private(set) var isFrozen: Bool = false
 
     /// The identifier of the `Die`.
     public let id = UUID()
@@ -41,6 +41,11 @@ public final class Die: ObservableObject, Identifiable {
     /// This property is an alias for `sides`.
     public var maximumValue: Int {
         self.sides
+    }
+    
+    /// The average value of a roll.
+    var averageValue: Float {
+        Float(self.maximumValue + self.minimumValue) / 2
     }
 
     /// The unbounded range of possible values.
@@ -71,7 +76,7 @@ public final class Die: ObservableObject, Identifiable {
         self.sides = sides
     }
 
-    // MARK: Utility
+    // MARK: Rolling
 
     /// Rolls the die, generating and returning the value.
     /// The latest roll's value can also be accessed via the `value` property.
@@ -121,8 +126,57 @@ public final class Die: ObservableObject, Identifiable {
         return self.roll(repetitions).reduce(0, +)
     }
 
+    // MARK: Freezing
+
+    public func freeze() {
+        self.isFrozen = true
+    }
+
     /// Toggles the `isFrozen` `Bool` property of the `Die`.
     public func toggleFreeze() {
         self.isFrozen.toggle()
+    }
+
+    public func unfreeze() {
+        self.isFrozen = false
+    }
+
+    // MARK: Utilities
+
+    private func isValid(value: Int) -> Bool {
+        value >= self.minimumValue && value <= self.maximumValue
+    }
+}
+
+// MARK: - Extensions
+
+extension Die: ProbabilityCalculating {
+    /// The probability of rolling any specific value.
+    /// This value is always equal to 1 divided by the number of sides.
+    public var singleRollProbability: Float {
+        1 / Float(self.maximumValue)
+    }
+    
+    public func occurrenceProbability(of condition: ProbabilityCondition) -> Float {
+        self.scoreProbability(of: condition)
+    }
+    
+    public func scoreProbability(of condition: ProbabilityCondition) -> Float {
+        guard self.isValid(value: condition.value) else {
+            return 0
+        }
+
+        switch condition {
+        case .equalTo:
+            return self.singleRollProbability
+        case let .greaterThan(value):
+            return Float(self.maximumValue - value) / Float(self.maximumValue)
+        case let .greaterThanOrEqualTo(value):
+            return Float(self.maximumValue - value + 1) / Float(self.maximumValue)
+        case let .lessThan(value):
+            return Float(value - 1) / Float(self.maximumValue)
+        case let .lessThanOrEqualTo(value):
+            return Float(value) / Float(self.maximumValue)
+        }
     }
 }
