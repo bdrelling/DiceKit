@@ -13,8 +13,8 @@ final class DiceHandProbabilityTests: XCTestCase {
     // MARK: Occurrence Probabilities
     
     func testOccurrenceProbabilityOfRollingExactValues() {
-        let firstProbability = Self.defaultHand.occurrenceProbability(of: .equalTo(3))
-        XCTAssertEqual(firstProbability, (1/6) * 2)
+        let probability = Self.defaultHand.occurrenceProbability(of: .equalTo(3))
+        XCTAssertEqual(probability, (1/6) * 2)
     }
 
     func testOccurrenceProbabilityOfRollingGreaterThanValue() {

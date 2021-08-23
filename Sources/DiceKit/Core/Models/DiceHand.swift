@@ -62,17 +62,34 @@ public extension DiceHand {
 
 // MARK: Probability
 
+extension Sequence where Element: AdditiveArithmetic {
+    /// Returns the total sum of all elements in the sequence
+    func sum() -> Element { reduce(.zero, +) }
+}
+
+extension Collection where Element: BinaryInteger {
+    /// Returns the average of all elements in the array
+    func average() -> Element { isEmpty ? .zero : sum() / Element(count) }
+    /// Returns the average of all elements in the array as Floating Point type
+    func average<T: FloatingPoint>() -> T { isEmpty ? .zero : T(sum()) / T(count) }
+}
+
+extension Collection where Element: BinaryFloatingPoint {
+    /// Returns the average of all elements in the array
+    func average() -> Element { isEmpty ? .zero : sum() / Element(count) }
+}
+
 import Algorithms
 
 extension DiceHand: ProbabilityCalculating {
     /// The probability of rolling any specific combination of values.
     /// This value is always equal to 1 divided by the number of sides across all dice.
     public var singleRollProbability: Float {
-        1 / Float(self.maximumValue)
+        Float(self.minimumValue) / Float(self.maximumValue)
     }
     
     public func occurrenceProbability(of condition: ProbabilityCondition) -> Float {
-        self.map { $0.occurrenceProbability(of: condition) }.reduce(0, +)
+        self.map { $0.occurrenceProbability(of: condition) }.average()
     }
     
     public func scoreProbability(of condition: ProbabilityCondition) -> Float {
